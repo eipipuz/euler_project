@@ -6,7 +6,7 @@ def factorize(n, factors = None):
 		factors = []
 	
 	max_factor = int(math.floor(math.sqrt(n))) + 1
-	for i in range(2, max_factor):
+	for i in xrange(2, max_factor):
 		if n % i == 0:
 			factors.append(i)
 			n /= i

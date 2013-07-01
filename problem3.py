@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 
-import sys
 import math
-
-n = int(sys.argv[1])
-if not n:
-	exit(1)
-
 def factorize(n, factors = None):
 	if factors is None:
 		factors = []
@@ -17,9 +11,15 @@ def factorize(n, factors = None):
 			factors.append(i)
 			n /= i
 			return factorize(n, factors)
-
 	factors.append(n)
 	return factors
 
-factors = factorize(n)
-print 'The largest prime factor of the number', n, 'is', factors[-1]
+if __name__ == "__main__":
+	import sys
+	n = int(sys.argv[1])
+	if not n:
+		exit(1)
+
+
+	factors = factorize(n)
+	print 'The largest prime factor of the number', n, 'is', factors[-1]

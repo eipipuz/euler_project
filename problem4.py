@@ -4,7 +4,7 @@
 import math
 import problem3
 
-def max_palindrome(n_digits):
+def get_max_palindrome(n_digits):
 	"""
 	The maximum product a number with N digits can have is:
 	max_int = int('9' * n_digits) # For example 99
@@ -51,7 +51,7 @@ def number_of_palindromes_with_N_digits(n):
 	else:
 		return 9 + 10**(n-1)
 
-def palindrome_desc_list(max_palindrome):
+def palindrome_desc_list(n):
 	"""
 	So if we get 77, we should return [77, 66, 55, ...]
 	So if we get 9779, we should return [9779, 9669, ..., 9009, 8998,
@@ -59,25 +59,87 @@ def palindrome_desc_list(max_palindrome):
 
 	We will work with a list, so we want a generator
 	"""
-	current_root = get_root(max_palindrome)
-	palindrome_size = number_of_digits(max_palindrome)
-	size = number_of_digits(current_root)
+	root = get_root(n)
+	palindrome_size = number_of_digits(n)
+	root_size = number_of_digits(root)
 	while True:
-		if current_root == 0:
-			if palindrome_size == 1:
-				raise StopIteration
-			else:
-				current_root = 9
-				palindrome_size = 1
-				size = 1
-		if palindrome_size % 2 == 0:
-			str_root = str(current_root) + str(current_root)[::-1]
-		else:
-			str_root = str(current_root) + str(current_root)[:-1][::-1]
-		yield int(str_root)
-		current_root -= 1
-		if size > number_of_digits(current_root):
+		if palindrome_size == 2 and root == 0: # if '00' then become '9'
+			root = 9
+			palindrome_size = 1
+			root_size = 1
+			str_palindrome = '9'
+		elif palindrome_size % 2 == 0: # then mirror it
+			str_palindrome = str(root) + str(root)[::-1]
+		elif root == 0:
+			raise StopIteration
+		else: # mirror but skip the last digit
+			str_palindrome = str(root) + str(root)[:-1][::-1]
+		yield int(str_palindrome)
+		root -= 1
+		if root_size > number_of_digits(root):
 			next_palindrome = '9' * (palindrome_size - 1)
-			current_root = get_root(int(next_palindrome))
+			root = get_root(int(next_palindrome))
 			palindrome_size -= 1
-			size = number_of_digits(current_root)
+			root_size = number_of_digits(root)
+
+def ways_to_split_in_two_a_set(set_of_primes):
+	"""
+	{a,b} can only be split into {a,b}. So f(2) = 1
+	{a,b,c} can be split into {a,{b,c}}, {b,{a,c}} & {c,{a,b}}. So f(3) = 3
+	The pattern is roughly, you have 3 families:
+	* the solution of f(n-1) adding the extra element to the left
+	* the solution of f(n-1) adding the extra element to the right
+	* the extra element on one side and all the others in the other side.
+
+	Therefore f(n) = 2f(n-1) + 1; f(n) = 2**(n-1) - 1
+	"""
+	ways = []
+	if len(set_of_primes) == 2:
+		ways.append(([set_of_primes[0]], [set_of_primes[1]]))
+	else:
+		import copy
+		simpler_ways = ways_to_split_in_two_a_set(set_of_primes[:-1])
+		side_left = copy.deepcopy(simpler_ways)
+		for way in side_left:
+			(way_left, way_right) = way
+			way_right.append(set_of_primes[-1])
+		ways += side_left
+		side_right = copy.deepcopy(simpler_ways)
+		for way in side_right:
+			(way_left, way_right) = way
+			way_left.append(set_of_primes[-1])
+		ways += side_right
+		ways.append(([set_of_primes[-1]], set_of_primes[:-1])) 
+		del copy
+	return ways
+
+def multiplication(x, y): return x*y
+
+def found_possible_combination(factors):
+	for (side_a, side_b)  in ways_to_split_in_two_a_set(factors):
+		factor_a = reduce(multiplication, side_a)
+		if number_of_digits(factor_a) != 2:
+			continue
+		factor_b = reduce(multiplication, side_b)
+		if number_of_digits(factor_b) == 2:
+			return (factor_a, factor_b)
+	return None
+
+def find_max_palindrome_product_of_numbers_with_N_digits(n):
+	"""
+	We first get the maximum palindrome that it could be, then we get a list in descending order. Each palindrome is tested in several ways until we find one that we like.
+	"""
+	max_palindrome = get_max_palindrome(n)
+	palindromes = palindrome_desc_list(max_palindrome)
+	for p in palindromes:
+		factors = problem3.factorize(p)
+		if len(factors) == 1: #it's a prime
+			continue
+		if number_of_digits(factors[-1]) > n:
+			continue
+		if len(factors) == 2 and number_of_digits(factors[0]) == n and number_of_digits(factors[1]) == n:
+			return tuple(factors)
+		#print p, factors
+		combination = found_possible_combination(factors)
+		if combination:
+			return combination

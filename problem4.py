@@ -93,34 +93,32 @@ def ways_to_split_in_two_a_set(set_of_primes):
 
 	Therefore f(n) = 2f(n-1) + 1; f(n) = 2**(n-1) - 1
 	"""
-	ways = []
 	if len(set_of_primes) == 2:
-		ways.append(([set_of_primes[0]], [set_of_primes[1]]))
+		ways = [([set_of_primes[0]], [set_of_primes[1]])]
 	else:
-		import copy
 		simpler_ways = ways_to_split_in_two_a_set(set_of_primes[:-1])
+		import copy
 		side_left = copy.deepcopy(simpler_ways)
+		del copy
 		for way in side_left:
 			(way_left, way_right) = way
 			way_right.append(set_of_primes[-1])
-		ways += side_left
-		side_right = copy.deepcopy(simpler_ways)
+		ways = side_left
+		side_right = simpler_ways
 		for way in side_right:
 			(way_left, way_right) = way
 			way_left.append(set_of_primes[-1])
 		ways += side_right
 		ways.append(([set_of_primes[-1]], set_of_primes[:-1])) 
-		del copy
 	return ways
-
-def multiplication(x, y): return x*y
 
 def found_possible_combination(factors):
 	for (side_a, side_b)  in ways_to_split_in_two_a_set(factors):
-		factor_a = reduce(multiplication, side_a)
+		mult = lambda x, y: x*y
+		factor_a = reduce(mult, side_a)
 		if number_of_digits(factor_a) != 2:
 			continue
-		factor_b = reduce(multiplication, side_b)
+		factor_b = reduce(mult, side_b)
 		if number_of_digits(factor_b) == 2:
 			return (factor_a, factor_b)
 	return None

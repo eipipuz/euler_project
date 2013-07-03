@@ -112,14 +112,14 @@ def ways_to_split_in_two_a_set(set_of_primes):
 		ways.append(([set_of_primes[-1]], set_of_primes[:-1])) 
 	return ways
 
-def found_possible_combination(factors):
+def found_possible_combination_with_N_digits(factors, n):
 	for (side_a, side_b)  in ways_to_split_in_two_a_set(factors):
 		mult = lambda x, y: x*y
 		factor_a = reduce(mult, side_a)
-		if number_of_digits(factor_a) != 2:
+		if number_of_digits(factor_a) != n:
 			continue
 		factor_b = reduce(mult, side_b)
-		if number_of_digits(factor_b) == 2:
+		if number_of_digits(factor_b) == n:
 			return (factor_a, factor_b)
 	return None
 
@@ -137,7 +137,6 @@ def find_max_palindrome_product_of_numbers_with_N_digits(n):
 			continue
 		if len(factors) == 2 and number_of_digits(factors[0]) == n and number_of_digits(factors[1]) == n:
 			return tuple(factors)
-		#print p, factors
-		combination = found_possible_combination(factors)
+		combination = found_possible_combination_with_N_digits(factors, n)
 		if combination:
 			return combination

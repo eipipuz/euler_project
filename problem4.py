@@ -123,6 +123,37 @@ def found_possible_combination_with_N_digits(factors, n):
 			return (factor_a, factor_b)
 	return None
 
+def found_factors(factors, max_number_of_digits):
+	(factor_a, factor_b) = factors
+	return (number_of_digits(factor_a) <= max_number_of_digits and
+		number_of_digits(factor_b) <= max_number_of_digits)
+
+def find_combination(factors, n):
+	if len(factors) < 2:
+		raise StopIteration
+	if len(factors) == 2:
+		if found_factors(factors, n):
+			yield factors
+		raise StopIteration
+	for another in find_combination(factors[:-1], n):
+		(factor_a, factor_b) = another
+		factor_b *= factors[-1]
+		another = (factor_a, factor_b)
+		if found_factors(another, n):
+			yield another
+	for another in find_combination(factors[:-1], n):
+		(factor_a, factor_b) = another
+		factor_a *= factors[-1]
+		another = (factor_a, factor_b)
+		if found_factors(another, n):
+			yield another
+	mult = lambda x, y: x*y
+	factor_b = reduce(mult, factors[:-1])
+	last_way = (factors[-1], factor_b)
+	if found_factors(last_way, n):
+		yield last_way
+	raise StopIteration
+
 def find_max_palindrome_product_of_numbers_with_N_digits(n):
 	"""
 	We first get the maximum palindrome that it could be, then we get a list in descending order. Each palindrome is tested in several ways until we find one that we like.

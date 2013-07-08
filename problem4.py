@@ -128,6 +128,33 @@ def found_factors(factors, max_number_of_digits):
 	return (number_of_digits(factor_a) <= max_number_of_digits and
 		number_of_digits(factor_b) <= max_number_of_digits)
 
+def find_comb(factors, n):
+	if len(factors) < 2:
+		return False
+	if len(factors) == 2:
+		if found_factors(factors, n):
+			return [ tuple(factors) ]
+		return False
+	ways = []
+	for another in find_combination(factors[:-1], n):
+		(factor_a, factor_b) = another
+		factor_b *= factors[-1]
+		another = (factor_a, factor_b)
+		if found_factors(another, n):
+			ways.append(another)
+	for another in find_combination(factors[:-1], n):
+		(factor_a, factor_b) = another
+		factor_a *= factors[-1]
+		another = (factor_a, factor_b)
+		if found_factors(another, n):
+			ways.append(another)
+	mult = lambda x, y: x*y
+	factor_b = reduce(mult, factors[:-1])
+	last_way = (factors[-1], factor_b)
+	if found_factors(last_way, n):
+		ways.append(last_way)
+	return ways
+
 def find_combination(factors, n):
 	if len(factors) < 2:
 		raise StopIteration
@@ -154,7 +181,7 @@ def find_combination(factors, n):
 		yield last_way
 	raise StopIteration
 
-def find_max_palindrome_product_of_numbers_with_N_digits(n):
+def find_max_palindrome_product_of_numbers_with_N_digits(n, way=2):
 	"""
 	We first get the maximum palindrome that it could be, then we get a list in descending order. Each palindrome is tested in several ways until we find one that we like.
 	"""
@@ -168,6 +195,25 @@ def find_max_palindrome_product_of_numbers_with_N_digits(n):
 			continue
 		if len(factors) == 2 and number_of_digits(factors[0]) == n and number_of_digits(factors[1]) == n:
 			return tuple(factors)
-		combination = found_possible_combination_with_N_digits(factors, n)
-		if combination:
-			return combination
+		if way == 1:
+			combination = found_possible_combination_with_N_digits(factors, n)
+			if combination:
+				return combination
+		elif way == 2:
+			for combination in find_combination(factors, n):
+				if combination:
+					return combination
+		else:
+			combination = find_comb(factors, n)
+			if combination:
+				return combination
+
+if __name__ == "__main__":
+	import sys
+	n = int(sys.argv[1])
+	if not n:
+		exit(1)
+
+	factors = find_max_palindrome_product_of_numbers_with_N_digits(n)
+	(factor_a, factor_b) = factors
+	print 'The factors for', factor_a*factor_b, 'are', factors

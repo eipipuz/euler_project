@@ -20,6 +20,5 @@ if __name__ == "__main__":
 	if not n:
 		exit(1)
 
-
 	factors = factorize(n)
 	print 'The largest prime factor of the number', n, 'is', factors[-1]
